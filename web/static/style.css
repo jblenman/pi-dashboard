@@ -1,0 +1,55 @@
+:root {
+  --bg:#0d1117; --card:#161b22; --line:#222a35; --fg:#e6edf3; --muted:#7d8794;
+  --cyan:#34d3ff; --purple:#b388ff; --red:#f85149; --green:#3fb950; --amber:#d29922;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+html, body {
+  width:800px; height:480px; overflow:hidden; background:var(--bg); color:var(--fg);
+  font-family:"Segoe UI", system-ui, sans-serif; -webkit-font-smoothing:antialiased;
+}
+.frame { width:800px; height:480px; display:flex; flex-direction:column; padding:14px; gap:12px; }
+
+.topbar { display:flex; justify-content:space-between; align-items:center; }
+.brand { font-weight:700; letter-spacing:.18em; font-size:16px; display:flex; align-items:center; gap:8px; }
+.brand .dot { width:9px; height:9px; border-radius:50%; background:var(--green); box-shadow:0 0 10px var(--green); }
+.time { text-align:right; display:flex; flex-direction:column; }
+#clock { font-size:26px; font-weight:600; font-variant-numeric:tabular-nums; line-height:1; }
+.date { font-size:12px; color:var(--muted); }
+
+.grid { flex:1; display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.card {
+  background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px;
+  display:flex; flex-direction:column; position:relative;
+}
+.card-head { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+.card-head h2 { font-size:14px; font-weight:600; text-transform:uppercase; letter-spacing:.12em; color:var(--muted); }
+.badge { font-size:10px; font-weight:700; color:#000; background:var(--amber); border-radius:5px; padding:2px 6px; }
+.status { width:9px; height:9px; border-radius:50%; background:var(--muted); margin-left:auto; }
+.status.ok { background:var(--green); box-shadow:0 0 8px var(--green); }
+
+/* Pi-hole card */
+.big { font-size:84px; font-weight:700; line-height:1; color:var(--red); font-variant-numeric:tabular-nums; margin-top:8px; }
+.big .unit { font-size:30px; color:var(--muted); margin-left:4px; }
+.sub { color:var(--muted); font-size:13px; margin-bottom:auto; }
+.stats { display:flex; justify-content:space-between; gap:8px; margin-top:14px; }
+.stats .v { display:block; font-size:22px; font-weight:600; font-variant-numeric:tabular-nums; }
+.stats .k { display:block; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+
+/* Speed card */
+.speed-nums { display:flex; align-items:baseline; gap:18px; margin:10px 0 6px; flex-wrap:wrap; }
+.num { display:flex; align-items:baseline; gap:6px; font-size:40px; font-weight:700; font-variant-numeric:tabular-nums; }
+.num.small { font-size:24px; color:var(--muted); }
+.num .unit { font-size:14px; color:var(--muted); font-weight:400; }
+.arrow { font-size:18px; }
+.arrow.dl { color:var(--cyan); }
+.arrow.ul { color:var(--purple); }
+.spark { width:100%; height:90px; margin-top:auto; }
+.muted { color:var(--muted); font-size:12px; }
+
+/* System status bar */
+.sysbar { display:flex; align-items:center; gap:20px; padding:8px 4px 0; border-top:1px solid var(--line); font-variant-numeric:tabular-nums; }
+.sysbar .sys { display:flex; align-items:baseline; gap:5px; font-size:16px; font-weight:600; }
+.sysbar .sys .lbl { font-size:11px; color:var(--muted); letter-spacing:.08em; }
+.sysbar .sys .u { font-size:11px; color:var(--muted); }
+.sysbar .ico { font-size:15px; }
+.sysbar .badge { margin-left:auto; }

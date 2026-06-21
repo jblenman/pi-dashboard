@@ -1,0 +1,17 @@
+[Unit]
+Description=pi-dashboard web UI (FastAPI/uvicorn)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=__PIDASH_USER__
+WorkingDirectory=__PIDASH_DIR__
+Environment=PYTHONPATH=__PIDASH_DIR__
+EnvironmentFile=-__PIDASH_DIR__/deploy/secrets.env
+ExecStart=__PIDASH_DIR__/.venv/bin/python -m uvicorn web.app:app --host 0.0.0.0 --port 8080
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

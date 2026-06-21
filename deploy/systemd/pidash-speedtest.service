@@ -1,0 +1,12 @@
+[Unit]
+Description=pi-dashboard speedtest collector (single run)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=__PIDASH_USER__
+WorkingDirectory=__PIDASH_DIR__
+Environment=PYTHONPATH=__PIDASH_DIR__
+EnvironmentFile=-__PIDASH_DIR__/deploy/secrets.env
+ExecStart=__PIDASH_DIR__/.venv/bin/python -m pidash.speedtest_collector

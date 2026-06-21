@@ -1,0 +1,5 @@
+# Shell scripts must stay LF even when authored on Windows, or bash on the Pi
+# fails with "bad interpreter: /usr/bin/env bash^M".
+*.sh text eol=lf
+deploy/install.sh text eol=lf
+deploy/deploy.sh text eol=lf

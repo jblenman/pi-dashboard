@@ -1,0 +1,9 @@
+# Web dashboard (next milestone -- not needed by the collector)
+fastapi>=0.110
+uvicorn[standard]>=0.29
+httpx>=0.27          # talks to the Pi-hole v6 REST API
+
+# The speedtest collector and DB layer use only the Python standard library.
+# They shell out to the Ookla "speedtest" CLI, installed separately:
+#   Raspberry Pi:  curl -s https://packagecloud.io/install/repositories/ookla/speedtest-cli/script.deb.sh | sudo bash && sudo apt-get install speedtest
+#   Windows (dev): winget install Ookla.Speedtest.CLI

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=pi-dashboard kiosk
+Comment=Fullscreen Chromium showing the local dashboard
+Exec=__PIDASH_DIR__/deploy/kiosk/pidash-kiosk.sh
+X-GNOME-Autostart-enabled=true

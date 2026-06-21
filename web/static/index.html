@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=800, height=480, initial-scale=1" />
+  <title>pi-dashboard</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="frame">
+    <header class="topbar">
+      <div class="brand"><span class="dot"></span> HOME</div>
+      <div class="time">
+        <span id="clock">--:--</span>
+        <span id="date" class="date"></span>
+      </div>
+    </header>
+
+    <main class="grid">
+      <section class="card pihole">
+        <div class="card-head">
+          <h2>Pi-hole</h2>
+          <span id="ph-badge" class="badge">DEMO</span>
+          <span id="ph-status" class="status"></span>
+        </div>
+        <div class="big"><span id="pct">--</span><span class="unit">%</span></div>
+        <div class="sub">queries blocked today</div>
+        <div class="stats">
+          <div><span id="blocked" class="v">--</span><span class="k">blocked</span></div>
+          <div><span id="total" class="v">--</span><span class="k">queries</span></div>
+          <div><span id="domains" class="v">--</span><span class="k">on blocklist</span></div>
+        </div>
+      </section>
+
+      <section class="card speed">
+        <div class="card-head">
+          <h2>Internet</h2>
+          <span id="st-updated" class="muted"></span>
+        </div>
+        <div class="speed-nums">
+          <div class="num"><span class="arrow dl">&#9660;</span><span id="dl">--</span><span class="unit">Mbps</span></div>
+          <div class="num"><span class="arrow ul">&#9650;</span><span id="ul">--</span><span class="unit">Mbps</span></div>
+          <div class="num small"><span id="ping">--</span><span class="unit">ms</span></div>
+        </div>
+        <svg id="spark" class="spark" viewBox="0 0 360 90" preserveAspectRatio="none"></svg>
+        <div id="st-meta" class="muted"></div>
+      </section>
+    </main>
+
+    <footer class="sysbar">
+      <span class="sys"><span class="ico">&#127777;</span><span id="sys-temp">--</span><span class="u">&#176;C</span></span>
+      <span class="sys"><span class="lbl">CPU</span><span id="sys-cpu">--</span><span class="u">%</span></span>
+      <span class="sys"><span class="lbl">MEM</span><span id="sys-mem">--</span><span class="u">%</span></span>
+      <span class="sys"><span class="lbl">UP</span><span id="sys-up">--</span></span>
+      <span id="sys-badge" class="badge">DEMO</span>
+    </footer>
+  </div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
