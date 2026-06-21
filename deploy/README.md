@@ -16,7 +16,9 @@ the web service, the 30-minute speedtest timer, and the Chromium kiosk.
 The `__PIDASH_DIR__` / `__PIDASH_USER__` placeholders in the unit files are filled
 in by `install.sh` at install time, so the project can live anywhere.
 
-## One-time Pi setup (at home, needs the hardware)
+## One-time Pi setup
+
+Run once, on the Pi itself (the deploy step below works from any machine).
 
 1. **Flash** Raspberry Pi OS (64-bit) to the microSD with Raspberry Pi Imager.
    In the Imager settings preset the hostname, enable **SSH**, and set the user
