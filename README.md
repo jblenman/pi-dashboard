@@ -6,7 +6,8 @@ Turn the Raspberry Pi 5 into a single always-on home box that:
 2. **Logs internet speed** on a schedule and tracks trends over time.
 3. **Shows it all on the 7" display** as a kiosk dashboard.
 
-Built to be developed on a desktop/dev machine now and deployed to the Pi later.
+The Pi-hole and system panels fall back to mock data when run off-Pi, so the whole
+dashboard can be built and previewed on any machine without the hardware.
 
 ## Hardware
 
@@ -35,42 +36,33 @@ Data:
 ## Tech decisions
 
 - **Custom build** (not Grafana / Speedtest-Tracker off-the-shelf) -- a tailored
-  800x480 single-screen dashboard fits the small display better, keeps deps light
-  on the Pi, and is the "programming" part you wanted. (Off-the-shelf options are
-  listed at the bottom if you change your mind.)
+  800x480 single-screen dashboard fits the small display better and keeps deps light
+  on the Pi. (Off-the-shelf options are listed at the bottom.)
 - **Python** collector + **FastAPI** backend + **vanilla HTML/CSS/JS** frontend
   (no build step to maintain on the Pi).
 - **Ookla `speedtest` CLI** (`--format=json`), not the Python `speedtest-cli` --
   more accurate, official ARM build.
 - **SQLite** -- one file, zero services, ideal for this time-series.
 
-## Build plan -- now vs. at home
+## Status
 
-### Buildable now on a dev machine (transfer later)
-- [x] Project scaffold + config
-- [x] Speedtest collector + SQLite layer
-- [x] Demo-data seeder (build the dashboard before real history exists)
-- [x] FastAPI dashboard: speedtest panel (reads the DB)
-- [x] Pi-hole v6 API client + dashboard panel (built against the documented API; mock now, live on deploy)
-- [x] systemd units + Chromium kiosk autostart + deploy-over-SSH script (`deploy/`, see `deploy/README.md`)
+Done:
+- [x] Config, SQLite layer, and the Ookla speedtest collector
+- [x] Demo-data seeder (preview the dashboard before real history exists)
+- [x] FastAPI backend + 800x480 UI -- speedtest panel, Pi-hole panel, system status bar
+- [x] Pi-hole v6 API client (representative mock data until a Pi-hole is reachable)
+- [x] Deploy: systemd units, Chromium kiosk autostart, deploy-over-SSH script (`deploy/`)
 
-### At home (needs the Pi / physical access)
-- [ ] Flash Raspberry Pi OS (microSD), boot, enable SSH
-- [ ] Move root to the NVMe SSD via the M.2 HAT (optional -- you have the SSD)
-- [ ] Attach + configure the 7" display
-- [ ] Install Pi-hole; set an **App Password** (Settings -> API); point the router's DNS at the Pi
-- [ ] Deploy this repo; enable the systemd services; set the kiosk autostart
-- [ ] Verify end-to-end on the display
+Remaining:
+- [ ] Hardware bring-up: flash Raspberry Pi OS, optional NVMe boot via the M.2 HAT, attach the
+  7" display, install Pi-hole and set an **App Password**, point the router's DNS at the Pi, then
+  deploy (`deploy/deploy.sh` -- full steps in [`deploy/README.md`](deploy/README.md))
+- [ ] **3D-printed case** (Bambu Lab A1) -- functional *and* a showpiece: the 7" display as an
+  angled front panel, clear airflow for the Active Cooler, cutouts for USB-C power, USB/Ethernet,
+  and the M.2 HAT/NVMe, plus microSD access. Remix a known-good Pi 5 + 7" display case on
+  MakerWorld, or model it from scratch in CadQuery.
 
-### Later / nice-to-have
-- [ ] **3D-printed case** (Bambu Lab A1) -- functional *and* a showpiece. Design constraints:
-  integrate the 7" display as a front panel at a viewing angle; clear airflow path for the
-  Active Cooler; cutouts for USB-C power, USB/Ethernet, and the M.2 HAT/NVMe; access to the
-  microSD slot; GPIO/camera passthrough optional. Start from a known-good Pi 5 + official
-  7" display case on MakerWorld and remix, or model from scratch in CadQuery for
-  fully parametric parts.
-
-## Running the collector now (dev machine)
+## Running the collector locally
 
 Install the Ookla CLI once:
 
