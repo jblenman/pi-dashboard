@@ -9,6 +9,10 @@ Turn the Raspberry Pi 5 into a single always-on home box that:
 The Pi-hole and system panels fall back to mock data when run off-Pi, so the whole
 dashboard can be built and previewed on any machine without the hardware.
 
+**Docs:** [`deploy/README.md`](deploy/README.md) to deploy · [`docs/OPERATIONS.md`](docs/OPERATIONS.md)
+for routing your network through Pi-hole (incl. Netgear Nighthawk), what happens if the
+Pi goes down, and day-to-day upkeep.
+
 ## Hardware
 
 - Raspberry Pi 5, 8GB
