@@ -39,7 +39,11 @@ A DNS server must keep the same IP, or the whole network loses name resolution
 when its DHCP lease changes. Reserve the **wired** NIC (if the Pi is on Ethernet,
 its eth0 MAC differs from the Wi-Fi MAC — reserve the one you're actually using).
 
-1. Browse to `http://routerlogin.net` (or the router's LAN IP) and sign in.
+1. Browse to **`https://<router-ip>`** (e.g. `https://192.168.1.1`) and sign in. Use
+   **https + the IP directly** — plain `http`/`routerlogin.net` bounces to a stub page
+   that redirects to `www.routerlogin.net/index.htm`, which browsers frequently serve a
+   stale **404** for from cache. Accept the self-signed-cert warning; the login is a
+   browser Basic-auth popup.
 2. **ADVANCED → Setup → LAN Setup**.
 3. Under **Address Reservation**, click **Add**.
 4. Pick the Pi from the device list (or enter its **MAC** manually), set the **IP
