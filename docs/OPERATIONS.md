@@ -107,6 +107,46 @@ to it and the internet keeps working — **unfiltered** during the outage.
 - True redundancy = a **second Pi-hole** (another Pi/container) as the secondary
   DNS, kept in sync (e.g. `nebula-sync`). Overkill for most homes.
 
+## Switching to Pi-hole as the DHCP server (Option B)
+
+Gives **per-device** stats (each client shows individually instead of everything
+appearing as the router) and lets Pi-hole serve DNS to every device directly.
+Trade-off: the Pi becomes your DHCP server too — if it's down, devices can't get
+*new* leases (existing ones keep working until they expire).
+
+Pre-stage the range while DHCP is still **off** (no disruption):
+
+```
+sudo pihole-FTL --config dhcp.start     "192.168.1.100"
+sudo pihole-FTL --config dhcp.end       "192.168.1.249"
+sudo pihole-FTL --config dhcp.router    "<router-ip>"
+sudo pihole-FTL --config dhcp.netmask   "255.255.255.0"
+sudo pihole-FTL --config dhcp.leaseTime "24h"
+```
+
+Keep the Pi's own IP **out** of that range. The cutover (do it where you can recover
+— ideally with a screen attached):
+
+1. **Give the Pi a static IP** (it can't rely on the router's DHCP once that's off):
+   ```
+   sudo nmcli con mod "<eth-connection>" ipv4.method manual \
+     ipv4.addresses <PI_IP>/24 ipv4.gateway <router-ip> ipv4.dns 127.0.0.1
+   sudo nmcli con up "<eth-connection>"
+   ```
+   Verify the Pi is still reachable at `<PI_IP>`. If the connection is **netplan-managed**
+   (name like `netplan-eth0`) and a reboot reverts it, set the static IP in
+   `/etc/netplan/*.yaml` + `sudo netplan apply` instead.
+2. **Disable the router's DHCP** — RAXE500: ADVANCED → Setup → LAN Setup → uncheck
+   **"Use Router as DHCP Server"** → Apply.
+3. **Enable Pi-hole's DHCP:** `sudo pihole-FTL --config dhcp.active true` (or Pi-hole UI
+   → Settings → DHCP → enable).
+4. **Verify:** reboot a client (or `ipconfig /renew`) — it should pull an IP in the new
+   range with the Pi as DNS and show up as its own client in Pi-hole.
+5. **Re-create any router IP reservations** as Pi-hole static leases (Settings → DHCP);
+   the Pi itself is static (step 1), so it needs no lease.
+
+Rollback: re-enable the router's DHCP and `sudo pihole-FTL --config dhcp.active false`.
+
 ## Day-to-day operations
 
 Everything lives under `~/pi-dashboard` on the Pi; the Pi-hole admin password is
