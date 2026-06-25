@@ -68,6 +68,10 @@ The router's built-in DNS relay now forwards every client lookup to the Pi:
 - ✅ Dead simple, fully reversible, gives a built-in fallback (secondary DNS).
 - ⚠️ Pi-hole sees **every query as coming from the router** (one client), so you
   lose the per-device breakdown in Pi-hole's dashboard.
+- ⚠️ The router may keep a **hidden ISP/modem DNS fallback** of its own — some
+  Nighthawks still resolve a few lookups *unfiltered* even with the Pi set as WAN DNS,
+  so the odd ad leaks through. **Option B** (Pi hands DNS to clients directly) is the
+  airtight fix.
 
 **Option B — Let Pi-hole run DHCP (full per-device stats).**
 1. Router: **ADVANCED → Setup → LAN Setup → uncheck "Use Router as DHCP Server"**, Apply.
@@ -127,14 +131,23 @@ sudo pihole-FTL --config dhcp.leaseTime "24h"
 Keep the Pi's own IP **out** of that range. The cutover (do it where you can recover
 — ideally with a screen attached):
 
-1. **Give the Pi a static IP** (it can't rely on the router's DHCP once that's off):
+1. **Give the Pi a static IP** (it can't rely on the router's DHCP once that's off).
+   Reuse the IP it already has so your SSH session survives the change:
    ```
    sudo nmcli con mod "<eth-connection>" ipv4.method manual \
-     ipv4.addresses <PI_IP>/24 ipv4.gateway <router-ip> ipv4.dns 127.0.0.1
-   sudo nmcli con up "<eth-connection>"
+     ipv4.addresses <PI_IP>/24 ipv4.gateway <router-ip> ipv4.dns 127.0.0.1 \
+     connection.autoconnect yes
+   sudo nmcli dev reapply eth0      # in-place; keeps the IP (and SSH) up
    ```
-   Verify the Pi is still reachable at `<PI_IP>`. If the connection is **netplan-managed**
-   (name like `netplan-eth0`) and a reboot reverts it, set the static IP in
+   `dev reapply` is gentler than `con up` (no full down/up), so an unchanged IP won't
+   drop your session. The Pi is about to be the *only* DHCP server, so confirm the static
+   config **persisted** and will come up on its own after a reboot:
+   ```
+   nmcli -g ipv4.method,connection.autoconnect con show "<eth-connection>"   # -> manual / yes
+   ```
+   Modern Raspberry Pi OS is plain NetworkManager (the `/etc/netplan/90-NM-*.yaml` files
+   are often empty stubs, so `nmcli` is authoritative). If yours **is** netplan-managed
+   (name like `netplan-eth0`) and a reboot reverts the change, set the static IP in
    `/etc/netplan/*.yaml` + `sudo netplan apply` instead.
 2. **Disable the router's DHCP** — RAXE500: ADVANCED → Setup → LAN Setup → uncheck
    **"Use Router as DHCP Server"** → Apply.
@@ -142,10 +155,34 @@ Keep the Pi's own IP **out** of that range. The cutover (do it where you can rec
    → Settings → DHCP → enable).
 4. **Verify:** reboot a client (or `ipconfig /renew`) — it should pull an IP in the new
    range with the Pi as DNS and show up as its own client in Pi-hole.
-5. **Re-create any router IP reservations** as Pi-hole static leases (Settings → DHCP);
-   the Pi itself is static (step 1), so it needs no lease.
+5. **Re-create any router IP reservations** as Pi-hole static leases — see *Static
+   reservations* below. The Pi itself is static (step 1), so it needs no lease.
 
 Rollback: re-enable the router's DHCP and `sudo pihole-FTL --config dhcp.active false`.
+
+### Static reservations (pin a device to a fixed IP)
+
+Reservations live in Pi-hole's `dhcp.hosts` array (dnsmasq `dhcp-host` format,
+`MAC,IP[,hostname]`). Setting it **replaces the whole array**, so include every entry:
+
+```
+sudo pihole-FTL --config dhcp.hosts \
+  '["aa:bb:cc:dd:ee:01,192.168.1.10,desktop", "aa:bb:cc:dd:ee:02,192.168.1.11,nas"]'
+```
+
+Keep reserved IPs **outside** the dynamic range (`dhcp.start`–`dhcp.end`). A device picks
+up its reserved IP on its next lease renewal (reboot, or toggle its network).
+
+**Find a device's MAC without touching it** — ping it from the Pi to force an ARP resolve,
+then read the table (works even if the device's firewall blocks ping; ARP is layer-2):
+
+```
+ping -c1 -W1 192.168.1.50 >/dev/null 2>&1; ip neigh show dev eth0 | grep 192.168.1.50
+```
+
+**Apple devices use a randomized "Private Wi-Fi Address"** that can rotate and slide off a
+MAC reservation. On the device, set that Wi-Fi network's **Private Wi-Fi Address → Fixed**
+(or Off), then reserve the MAC it shows.
 
 ## Day-to-day operations
 
