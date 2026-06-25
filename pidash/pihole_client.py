@@ -28,6 +28,24 @@ _MOCK_SUMMARY = {
     "mock": True,
 }
 
+_MOCK_BREAKDOWN = {
+    "clients": [
+        {"label": "desktop", "ip": "192.168.1.20", "count": 4821},
+        {"label": "phone", "ip": "192.168.1.31", "count": 3102},
+        {"label": "tv", "ip": "192.168.1.44", "count": 1890},
+        {"label": "laptop", "ip": "192.168.1.27", "count": 1455},
+        {"label": "tablet", "ip": "192.168.1.55", "count": 980},
+    ],
+    "blocked_domains": [
+        {"label": "ads.example.net", "count": 1203},
+        {"label": "telemetry.example.com", "count": 877},
+        {"label": "tracker.example.io", "count": 654},
+        {"label": "metrics.example.org", "count": 432},
+        {"label": "beacon.example.net", "count": 311},
+    ],
+    "mock": True,
+}
+
 
 class PiholeClient:
     def __init__(self, base_url: Optional[str] = None,
@@ -44,17 +62,21 @@ class PiholeClient:
         # v6 shape: {"session": {"valid": true, "sid": "...", ...}}
         self._sid = (resp.json().get("session") or {}).get("sid")
 
-    def _fetch_summary(self, client: httpx.Client) -> dict:
+    def _get(self, client: httpx.Client, path: str) -> dict:
+        """GET an API path with the cached sid, re-authenticating once on a 401."""
         if not self._sid:
             self._authenticate(client)
         headers = {"X-FTL-SID": self._sid} if self._sid else {}
-        resp = client.get(self.base_url + "/api/stats/summary", headers=headers)
+        resp = client.get(self.base_url + path, headers=headers)
         if resp.status_code == 401:  # session expired -> re-auth once
             self._authenticate(client)
             headers = {"X-FTL-SID": self._sid} if self._sid else {}
-            resp = client.get(self.base_url + "/api/stats/summary", headers=headers)
+            resp = client.get(self.base_url + path, headers=headers)
         resp.raise_for_status()
         return resp.json()
+
+    def _fetch_summary(self, client: httpx.Client) -> dict:
+        return self._get(client, "/api/stats/summary")
 
     def get_summary(self) -> dict:
         """Return normalized Pi-hole stats, or mock data if unavailable."""
@@ -66,6 +88,19 @@ class PiholeClient:
         except Exception:
             return dict(_MOCK_SUMMARY)
         return self._normalize(raw)
+
+    def get_breakdown(self, count: int = 5) -> dict:
+        """Top clients (per-device) + top blocked domains, or mock data if unavailable."""
+        if not self.app_password:
+            return dict(_MOCK_BREAKDOWN)
+        try:
+            with self._lock, httpx.Client(timeout=self.timeout, verify=False) as client:
+                # fetch a few extra clients since we filter the router relay + localhost
+                clients_raw = self._get(client, f"/api/stats/top_clients?count={count + 6}")
+                blocked_raw = self._get(client, f"/api/stats/top_domains?blocked=true&count={count}")
+        except Exception:
+            return dict(_MOCK_BREAKDOWN)
+        return self._normalize_breakdown(clients_raw, blocked_raw, count)
 
     @staticmethod
     def _normalize(raw: dict) -> dict:
@@ -79,3 +114,22 @@ class PiholeClient:
             "status": "active",
             "mock": False,
         }
+
+    @staticmethod
+    def _normalize_breakdown(clients_raw: dict, blocked_raw: dict, count: int) -> dict:
+        skip = {config.PIHOLE_GATEWAY_IP, "127.0.0.1", "::1"}
+        clients = []
+        for c in clients_raw.get("clients", []):
+            ip = c.get("ip", "")
+            if ip in skip:
+                continue
+            # prefer a hostname, strip the .lan suffix; fall back to the IP
+            name = (c.get("name") or "").rsplit(".lan", 1)[0] or ip
+            clients.append({"label": name, "ip": ip, "count": c.get("count") or 0})
+            if len(clients) >= count:
+                break
+        domains = [
+            {"label": d.get("domain", ""), "count": d.get("count") or 0}
+            for d in blocked_raw.get("domains", [])[:count]
+        ]
+        return {"clients": clients, "blocked_domains": domains, "mock": False}

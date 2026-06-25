@@ -82,6 +82,43 @@ async function refreshSystem() {
   } catch (e) { /* keep last-good values */ }
 }
 
+function esc(s) {
+  return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
+function renderBars(ul, items, label) {
+  if (!ul) return;
+  if (!items || !items.length) { ul.innerHTML = ""; return; }
+  const max = Math.max(...items.map((i) => i.count || 0), 1);
+  ul.innerHTML = items.map((i) =>
+    '<li><i class="bar" style="width:' + Math.round((i.count || 0) / max * 100) + '%"></i>' +
+    '<span class="lbl">' + esc(label(i)) + '</span>' +
+    '<span class="ct">' + fmt(i.count) + '</span></li>'
+  ).join("");
+}
+
+async function refreshBreakdown() {
+  try {
+    const b = await getJSON("/api/pihole/breakdown");
+    renderBars($("#clients"), b.clients, (i) => i.label || i.ip);
+    renderBars($("#blocked-list"), b.blocked_domains, (i) => i.label);
+    $("#cl-badge").style.display = b.mock ? "inline-block" : "none";
+  } catch (e) { /* keep last-good values */ }
+}
+
+async function refreshStats() {
+  try {
+    const s = await getJSON("/api/speedtest/stats");
+    const d = (s && s.day) || {};
+    if (!d.n) { $("#st-stats").textContent = ""; return; }
+    $("#st-stats").innerHTML =
+      "24h avg <b>&#9660;" + fmt(d.dl_avg) + "</b> <b>&#9650;" + fmt(d.ul_avg) + "</b>" +
+      " &middot; peak &#9660;" + fmt(d.dl_max) +
+      " &middot; ping " + fmt(d.ping_min, 0) + "ms" +
+      " &middot; " + d.n + " tests";
+  } catch (e) { /* keep last-good values */ }
+}
+
 tickClock();
 setInterval(tickClock, 1000);
 refreshSpeedtest();
@@ -90,6 +127,10 @@ refreshPihole();
 setInterval(refreshPihole, 15000);
 refreshSystem();
 setInterval(refreshSystem, 15000);
+refreshBreakdown();
+setInterval(refreshBreakdown, 20000);
+refreshStats();
+setInterval(refreshStats, 60000);
 
 // Keep the kiosk display awake (Screen Wake Lock API; valid on localhost/secure contexts).
 let _wakeLock = null;

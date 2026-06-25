@@ -29,6 +29,9 @@ PIHOLE_URL = os.environ.get("PIDASH_PIHOLE_URL", "http://127.0.0.1")
 # App password from the Pi-hole UI: Settings > API > App Password.
 # Never hard-code this; supply it via env / a secret file at deploy time.
 PIHOLE_APP_PASSWORD = os.environ.get("PIDASH_PIHOLE_APP_PASSWORD", "")
+# IPs to drop from the per-client breakdown: the router's relay address (devices that
+# haven't renewed their DHCP lease yet still funnel DNS through it) and localhost/the Pi.
+PIHOLE_GATEWAY_IP = os.environ.get("PIDASH_GATEWAY_IP", "192.168.1.1")
 
 # --- Web dashboard ----------------------------------------------------------
 WEB_HOST = os.environ.get("PIDASH_WEB_HOST", "127.0.0.1")

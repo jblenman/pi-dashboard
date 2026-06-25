@@ -60,6 +60,29 @@ def pihole_summary():
     return JSONResponse(_pihole.get_summary())
 
 
+@app.get("/api/pihole/breakdown")
+def pihole_breakdown():
+    """Top clients (per-device) and top blocked domains for the lower panels."""
+    return JSONResponse(_pihole.get_breakdown())
+
+
+@app.get("/api/speedtest/stats")
+def speedtest_stats():
+    """Aggregate speedtest stats over the last 24h and 7d."""
+    def shape(s):
+        n = (s or {}).get("n") or 0
+        if not n:
+            return {"n": 0}
+        rnd = lambda v: round(v, 1) if v is not None else None
+        return {
+            "n": n,
+            "dl_avg": rnd(s["dl_avg"]), "dl_min": rnd(s["dl_min"]), "dl_max": rnd(s["dl_max"]),
+            "ul_avg": rnd(s["ul_avg"]), "ul_min": rnd(s["ul_min"]), "ul_max": rnd(s["ul_max"]),
+            "ping_avg": rnd(s["ping_avg"]), "ping_min": rnd(s["ping_min"]),
+        }
+    return JSONResponse({"day": shape(db.stats(24)), "week": shape(db.stats(24 * 7))})
+
+
 @app.get("/api/system")
 def system_stats():
     return JSONResponse(get_system_stats())

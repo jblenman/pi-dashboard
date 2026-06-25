@@ -16,7 +16,7 @@ html, body {
 #clock { font-size:26px; font-weight:600; font-variant-numeric:tabular-nums; line-height:1; }
 .date { font-size:12px; color:var(--muted); }
 
-.grid { flex:1; display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.grid { flex:1; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1.12fr 1fr; gap:10px; }
 .card {
   background:var(--card); border:1px solid var(--line); border-radius:14px; padding:16px;
   display:flex; flex-direction:column; position:relative;
@@ -28,22 +28,22 @@ html, body {
 .status.ok { background:var(--green); box-shadow:0 0 8px var(--green); }
 
 /* Pi-hole card */
-.big { font-size:84px; font-weight:700; line-height:1; color:var(--red); font-variant-numeric:tabular-nums; margin-top:8px; }
-.big .unit { font-size:30px; color:var(--muted); margin-left:4px; }
+.big { font-size:54px; font-weight:700; line-height:1; color:var(--red); font-variant-numeric:tabular-nums; margin-top:4px; }
+.big .unit { font-size:22px; color:var(--muted); margin-left:4px; }
 .sub { color:var(--muted); font-size:13px; margin-bottom:auto; }
-.stats { display:flex; justify-content:space-between; gap:8px; margin-top:14px; }
+.stats { display:flex; justify-content:space-between; gap:8px; margin-top:10px; }
 .stats .v { display:block; font-size:22px; font-weight:600; font-variant-numeric:tabular-nums; }
 .stats .k { display:block; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
 
 /* Speed card */
-.speed-nums { display:flex; align-items:baseline; gap:18px; margin:10px 0 6px; flex-wrap:wrap; }
-.num { display:flex; align-items:baseline; gap:6px; font-size:40px; font-weight:700; font-variant-numeric:tabular-nums; }
-.num.small { font-size:24px; color:var(--muted); }
+.speed-nums { display:flex; align-items:baseline; gap:14px; margin:6px 0 2px; flex-wrap:wrap; }
+.num { display:flex; align-items:baseline; gap:6px; font-size:30px; font-weight:700; font-variant-numeric:tabular-nums; }
+.num.small { font-size:20px; color:var(--muted); }
 .num .unit { font-size:14px; color:var(--muted); font-weight:400; }
 .arrow { font-size:18px; }
 .arrow.dl { color:var(--cyan); }
 .arrow.ul { color:var(--purple); }
-.spark { width:100%; height:90px; margin-top:auto; }
+.spark { width:100%; height:44px; margin-top:4px; }
 .muted { color:var(--muted); font-size:12px; }
 
 /* System status bar */
@@ -53,3 +53,17 @@ html, body {
 .sysbar .sys .u { font-size:11px; color:var(--muted); }
 .sysbar .ico { font-size:15px; }
 .sysbar .badge { margin-left:auto; }
+
+/* Speedtest stats line (inside the Internet card) */
+.st-stats { font-size:11.5px; color:var(--muted); margin-top:5px; line-height:1.4; }
+.st-stats b { color:var(--fg); font-weight:600; }
+
+/* Top-N list cards (clients, blocked domains) */
+.card.list { padding:12px 14px; }
+.rows { list-style:none; display:flex; flex-direction:column; gap:3px; margin-top:5px; overflow:hidden; }
+.rows li { position:relative; display:flex; align-items:center; justify-content:space-between;
+  font-size:13px; padding:3px 8px; border-radius:6px; overflow:hidden; font-variant-numeric:tabular-nums; }
+.rows .bar { position:absolute; left:0; top:0; bottom:0; z-index:0; border-radius:6px; background:rgba(52,211,255,.16); }
+.card.list.blocked .rows .bar { background:rgba(248,81,73,.17); }
+.rows .lbl { position:relative; z-index:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rows .ct { position:relative; z-index:1; color:var(--muted); font-size:12px; padding-left:10px; flex-shrink:0; }

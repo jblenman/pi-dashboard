@@ -5,6 +5,7 @@ Pi-hole keeps its own long-term database and we read it live via its v6 API.
 """
 
 import sqlite3
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 from pidash import config
@@ -76,3 +77,25 @@ def recent_results(limit: int = 96) -> List[sqlite3.Row]:
             (limit,),
         ).fetchall()
     return list(reversed(rows))
+
+
+def stats(hours: int = 24) -> dict:
+    """Aggregate speedtest metrics over the last `hours`.
+
+    ts_utc is ISO-8601 UTC (Ookla's `...Z`), so a same-shaped string cutoff compares
+    lexically. COUNT(*) always returns a row; AVG/MIN/MAX are NULL when the window is empty.
+    """
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=hours)).strftime("%Y-%m-%dT%H:%M:%S")
+    with get_connection() as conn:
+        row = conn.execute(
+            """
+            SELECT COUNT(*)          AS n,
+                   AVG(download_mbps) AS dl_avg, MIN(download_mbps) AS dl_min, MAX(download_mbps) AS dl_max,
+                   AVG(upload_mbps)   AS ul_avg, MIN(upload_mbps)   AS ul_min, MAX(upload_mbps)   AS ul_max,
+                   AVG(ping_ms)       AS ping_avg, MIN(ping_ms)     AS ping_min
+            FROM speedtest_results
+            WHERE ts_utc >= ?
+            """,
+            (cutoff,),
+        ).fetchone()
+    return {k: row[k] for k in row.keys()} if row else {}
