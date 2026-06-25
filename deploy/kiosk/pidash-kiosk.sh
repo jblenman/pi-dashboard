@@ -34,4 +34,5 @@ exec "$CHROME" \
   --check-for-update-interval=31536000 \
   --overscroll-history-navigation=0 \
   --hide-scrollbars \
+  --password-store=basic \
   --incognito

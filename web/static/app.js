@@ -90,3 +90,18 @@ refreshPihole();
 setInterval(refreshPihole, 15000);
 refreshSystem();
 setInterval(refreshSystem, 15000);
+
+// Keep the kiosk display awake (Screen Wake Lock API; valid on localhost/secure contexts).
+let _wakeLock = null;
+async function keepAwake() {
+  try {
+    if ("wakeLock" in navigator) {
+      _wakeLock = await navigator.wakeLock.request("screen");
+      _wakeLock.addEventListener("release", () => { _wakeLock = null; });
+    }
+  } catch (e) { /* unavailable; compositor handles blanking otherwise */ }
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && !_wakeLock) keepAwake();
+});
+keepAwake();
